@@ -3,5 +3,7 @@
     "files.exclude":{
         ".nyc_output": true,
         "coverage": true
-    }
+    },
+
+    "typescript.tsdk": "node_modules/typescript/lib"
 }
