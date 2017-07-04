@@ -4,9 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "node node_modules/tslint/bin/tslint -c tslint.json -s node_modules/custom-tslint-formatters/formatters -t grouped --fix 'src/**/*.ts?(x)'",
+    "mocha": "node_modules/.bin/_mocha --recursive --compilers ts:ts-node/register --bail -R spec test/**/*.spec.ts",
+    "pretest": "npm run lint",
+    "test": "node_modules/.bin/nyc npm run mocha"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^2.2.41",
+    "@types/node": "^8.0.7",
+    "@types/yamljs": "^0.2.30",
+    "chai": "^4.0.2",
+    "custom-tslint-formatters": "^2.1.0",
+    "mocha": "^3.4.2",
+    "nyc": "^11.0.3",
+    "ts-node": "^3.1.0",
+    "tslint": "^5.4.3",
+    "tslint-eslint-rules": "^4.1.1",
+    "yamljs": "^0.3.0"
+  }
 }

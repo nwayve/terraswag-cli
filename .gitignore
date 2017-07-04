@@ -1,0 +1,9 @@
+# Dependency directories
+node_modules
+
+# Build artifacts
+dist
+
+# Test artifacts
+.nyc_output
+coverage
