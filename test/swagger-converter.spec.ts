@@ -62,94 +62,100 @@ describe('swaggerToTerraform', function () {
         return del(outDir, { force: true });
     });
 
-    it('should create a main.tf file in the /service-module folder', function () {
-        // Arrange
+    describe('/service-module/api.tf', function () {
+        it('should create an api.tf file in the /service-module folder', function () {
+            // Arrange
 
-        // Act
-        swaggerToTerraform(swaggerDoc);
+            // Act
+            swaggerToTerraform(swaggerDoc);
 
-        // Assert
-        fs.existsSync(mainTfFile).should.be.true;
+            // Assert
+            fs.existsSync(apiTfFile).should.be.true;
+        });
+
+        it('should overwrite the api.tf file in the /service-module folder if it already exists', function () {
+            // Arrange
+            fs.mkdirSync(serviceModuleFolder);
+            fs.writeFileSync(apiTfFile, uid);
+
+            // Act
+            swaggerToTerraform(swaggerDoc);
+            const result = fs.readFileSync(apiTfFile, 'utf8');
+
+            // Assert
+            result.should.not.equal(uid);
+        });
+
+        it('should create minimal api.tf file from minimimal swagger document', function () {
+            // Arrange
+            const target = dedent(`resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {
+                                name        = "\${var.service["name"]}"
+                                description = "\${var.service["description"]}"
+                              }`) + '\n';
+
+            // Act
+            swaggerToTerraform(swaggerDoc);
+            const result = fs.readFileSync(apiTfFile, 'utf8');
+
+            // Assert
+            result.should.equal(target);
+        });
     });
 
-    it('should overwrite the main.tf file in the /service-module folder if it already exists', function () {
-        // Arrange
-        fs.mkdirSync(serviceModuleFolder);
-        fs.writeFileSync(mainTfFile, uid);
+    describe('/service-module/main.tf', function () {
+        it('should create a main.tf file in the /service-module folder', function () {
+            // Arrange
 
-        // Act
-        swaggerToTerraform(swaggerDoc);
-        const result = fs.readFileSync(mainTfFile, 'utf8');
+            // Act
+            swaggerToTerraform(swaggerDoc);
 
-        // Assert
-        result.should.not.equal(uid);
+            // Assert
+            fs.existsSync(mainTfFile).should.be.true;
+        });
+
+        it('should overwrite the main.tf file in the /service-module folder if it already exists', function () {
+            // Arrange
+            fs.mkdirSync(serviceModuleFolder);
+            fs.writeFileSync(mainTfFile, uid);
+
+            // Act
+            swaggerToTerraform(swaggerDoc);
+            const result = fs.readFileSync(mainTfFile, 'utf8');
+
+            // Assert
+            result.should.not.equal(uid);
+        });
     });
 
-    it('should create an api.tf file in the /service-module folder', function () {
-        // Arrange
+    describe('Validation', function () {
+        it('should call the callback function with an Error if the SwaggerDocument does not have at least one path', function () {
+            // Arrange
+            swaggerDoc.paths = {};
+            const callback = sandbox.spy();
 
-        // Act
-        swaggerToTerraform(swaggerDoc);
+            // Act
+            swaggerToTerraform(swaggerDoc, callback);
 
-        // Assert
-        fs.existsSync(apiTfFile).should.be.true;
-    });
+            // Assert
+            callback.should.have.been.calledOnce;
+            callback.should.have.been.calledWithMatch(null, Error);
+            fs.existsSync(apiTfFile).should.be.false;
+        });
 
-    it('should overwrite the api.tf file in the /service-module folder if it already exists', function () {
-        // Arrange
-        fs.mkdirSync(serviceModuleFolder);
-        fs.writeFileSync(apiTfFile, uid);
+        it('should call the callback function with an Error if the SwaggerDocument does not have at least one method', function () {
+            // Arrange
+            swaggerDoc.paths = {
+                '/': {}
+            };
+            const callback = sandbox.spy();
 
-        // Act
-        swaggerToTerraform(swaggerDoc);
-        const result = fs.readFileSync(apiTfFile, 'utf8');
+            // Act
+            swaggerToTerraform(swaggerDoc, callback);
 
-        // Assert
-        result.should.not.equal(uid);
-    });
-
-    it('should call the callback function with an Error if the SwaggerDocument does not have at least one path', function () {
-        // Arrange
-        swaggerDoc.paths = {};
-        const callback = sandbox.spy();
-
-        // Act
-        swaggerToTerraform(swaggerDoc, callback);
-
-        // Assert
-        callback.should.have.been.calledOnce;
-        callback.should.have.been.calledWithMatch(null, Error);
-        fs.existsSync(apiTfFile).should.be.false;
-    });
-
-    it('should call the callback function with an Error if the SwaggerDocument does not have at least one method', function () {
-        // Arrange
-        swaggerDoc.paths = {
-            '/': {}
-        };
-        const callback = sandbox.spy();
-
-        // Act
-        swaggerToTerraform(swaggerDoc, callback);
-
-        // Assert
-        callback.should.have.been.calledOnce;
-        callback.should.have.been.calledWithMatch(null, Error);
-        fs.existsSync(apiTfFile).should.be.false;
-    });
-
-    it('should create minimal api.tf file from minimimal swagger document', function () {
-        // Arrange
-        const target = dedent`resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {
-                                name        = "${swaggerDoc.info.title}"
-                                description = ""
-                              }\n`;
-
-        // Act
-        swaggerToTerraform(swaggerDoc);
-        const result = fs.readFileSync(apiTfFile, 'utf8');
-
-        // Assert
-        result.should.equal(target);
+            // Assert
+            callback.should.have.been.calledOnce;
+            callback.should.have.been.calledWithMatch(null, Error);
+            fs.existsSync(apiTfFile).should.be.false;
+        });
     });
 });
