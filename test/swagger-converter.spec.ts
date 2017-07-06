@@ -12,7 +12,6 @@ chai.should();
 chai.use(sinonChai);
 
 // Vendor
-import * as dedent from 'dedent'; // allows for indented multi-line strings
 import * as del from 'del';
 import * as uuid from 'uuid';
 
@@ -88,10 +87,11 @@ describe('swaggerToTerraform', function () {
 
         it('should create minimal api.tf file from minimimal swagger document', function () {
             // Arrange
-            const target = dedent(`resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {
-                                name        = "\${var.service["name"]}"
-                                description = "\${var.service["description"]}"
-                              }`) + '\n';
+            const target =
+`resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {
+  name        = "\${var.service["name"]}"
+  description = "\${var.service["description"]}"
+}\n`;
 
             // Act
             swaggerToTerraform(swaggerDoc);
