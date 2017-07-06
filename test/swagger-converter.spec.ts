@@ -2,23 +2,53 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Vendor
+// Testing
 import * as chai from 'chai';
+import { expect } from 'chai';
+import * as sinon from 'sinon';
+import { SinonSandbox } from 'sinon';
+import * as sinonChai from 'sinon-chai';
 chai.should();
+chai.use(sinonChai);
+
+// Vendor
+import * as dedent from 'dedent'; // allows for indented multi-line strings
 import * as del from 'del';
+import * as uuid from 'uuid';
 
 // Project
-import { swaggerToTerraform } from '../src/swagger-converter';
+import {
+    swaggerToTerraform,
+    SwaggerDocument
+} from '../src/swagger-converter';
 
 describe('swaggerToTerraform', function () {
     const outDir = path.join(__dirname, 'temp');
+    const apiTerraformFile = outDir + '/api.tf';
+    const uid = uuid.v4();
+    let sandbox: SinonSandbox;
+
+    let swaggerDoc: SwaggerDocument;
 
     beforeEach(function () {
+        sandbox = sinon.sandbox.create();
+
         if (!fs.existsSync(outDir)) {
             fs.mkdirSync(outDir);
         }
 
         process.chdir(outDir);
+
+        swaggerDoc = {
+            swagger: '2.0',
+            info: {
+                title: uid,
+                version: '2017-06-26T18:48:48Z'
+            },
+            paths: {
+                '/': { 'get': {} }
+            }
+        };
     });
 
     afterEach(function () {
@@ -28,12 +58,56 @@ describe('swaggerToTerraform', function () {
 
     it('should create an api.tf file in the current directory', function () {
         // Arrange
-        const apiTerraformFile = outDir + '/api.tf';
 
         // Act
-        swaggerToTerraform();
+        swaggerToTerraform(swaggerDoc);
 
         // Assert
         fs.existsSync(apiTerraformFile).should.be.true;
+    });
+
+    it('should call the callback function with an Error if the SwaggerDocument does not have at least one path', function () {
+        // Arrange
+        swaggerDoc.paths = {};
+        const callback = sandbox.spy();
+
+        // Act
+        swaggerToTerraform(swaggerDoc, callback);
+
+        // Assert
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWithMatch(null, Error);
+        fs.existsSync(apiTerraformFile).should.be.false;
+    });
+
+    it('should call the callback function with an Error if the SwaggerDocument does not have at least one method', function () {
+        // Arrange
+        swaggerDoc.paths = {
+            '/': {}
+        };
+        const callback = sandbox.spy();
+
+        // Act
+        swaggerToTerraform(swaggerDoc, callback);
+
+        // Assert
+        callback.should.have.been.calledOnce;
+        callback.should.have.been.calledWithMatch(null, Error);
+        fs.existsSync(apiTerraformFile).should.be.false;
+    });
+
+    it('should create minimal api.tf file from minimimal swagger document', function () {
+        // Arrange
+        const target = dedent`resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {
+                                name        = "${swaggerDoc.info.title}"
+                                description = ""
+                              }\n`;
+
+        // Act
+        swaggerToTerraform(swaggerDoc);
+        const result = fs.readFileSync(apiTerraformFile, 'utf8');
+
+        // Assert
+        result.should.equal(target);
     });
 });

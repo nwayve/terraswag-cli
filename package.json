@@ -12,22 +12,35 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "lodash": "^4.17.4"
+  },
   "devDependencies": {
     "@types/chai": "^4.0.1",
+    "@types/dedent": "^0.7.0",
     "@types/del": "^2.2.32",
+    "@types/lodash": "^4.14.68",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.7",
+    "@types/nunjucks": "0.0.32",
+    "@types/sinon": "^2.3.2",
+    "@types/sinon-chai": "^2.7.28",
+    "@types/uuid": "^3.0.0",
     "@types/yamljs": "^0.2.30",
     "chai": "^4.0.2",
     "custom-tslint-formatters": "^2.1.0",
+    "dedent": "^0.7.0",
     "del": "^3.0.0",
     "mocha": "^3.4.2",
+    "nunjucks": "^3.0.1",
     "nyc": "^11.0.3",
+    "sinon": "^2.3.6",
+    "sinon-chai": "^2.11.0",
     "ts-node": "^3.1.0",
     "tslint": "^5.4.3",
     "tslint-eslint-rules": "^4.1.1",
     "typescript": "^2.4.1",
+    "uuid": "^3.1.0",
     "yamljs": "^0.3.0"
   }
 }
