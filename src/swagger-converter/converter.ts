@@ -8,25 +8,31 @@ import * as njk from 'nunjucks';
 njk.configure(path.join(__dirname, 'templates'));
 
 // Project
-import { SwaggerDocument } from './models';
+import { SwaggerDocument, PathsObject } from './models';
+
+const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
 
 export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Function): void {
-    const cb = callback;
-    const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
-    const match = _(swaggerDoc.paths)
-        .pickBy((val: Object, key: string) => /^\/.*$/g.test(key))
-        .find((val: Object) => methods.some(m => _(val).has(m)));
-    if (!match) {
-        return cb && cb(null, new Error());
+    const cb = callback || function () { };
+
+    if (!swaggerDocIsValid(swaggerDoc, cb)) {
+        return;
     }
 
-    const restApi = renderRestApi(swaggerDoc.info.title);
+    const serviceModuleFolder = path.join(process.cwd(), 'service-module');
+    if (!fs.existsSync(serviceModuleFolder)) {
+        fs.mkdirSync(serviceModuleFolder);
+    }
 
-    const apitf = path.join(process.cwd(), 'api.tf');
+    const mainModuleTf = path.join(serviceModuleFolder, 'main.tf');
+    fs.writeFileSync(mainModuleTf, '');
+
+    const apitf = path.join(serviceModuleFolder, 'api.tf');
+    const restApi = renderRestApi(swaggerDoc.info.title);
     fs.writeFileSync(apitf, restApi);
 }
 
-function renderRestApi(name: string, description: string = '') {
+function renderRestApi(name: string, description: string = ''): string {
     const data = {
         service: {
             name: name,
@@ -34,4 +40,19 @@ function renderRestApi(name: string, description: string = '') {
         }
     };
     return njk.render('aws-api-gateway-rest-api.tf.njk', data);
+}
+
+function swaggerDocIsValid(swaggerDoc: SwaggerDocument, callback?: Function): boolean {
+    const cb = callback;
+
+    const hasAtLeastOnePathAndMethod = _(swaggerDoc.paths)
+        .pickBy((val: Object, key: string) => /^\/.*$/g.test(key))
+        .find((val: Object) => methods.some(m => _(val).has(m)));
+
+    if (!hasAtLeastOnePathAndMethod) {
+        cb && cb(null, new Error('Insufficient paths or methods.  To create an API Gateway at least one path and one method is required.'));
+        return false;
+    }
+
+    return true;
 }

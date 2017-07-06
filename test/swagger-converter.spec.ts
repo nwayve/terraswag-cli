@@ -23,9 +23,15 @@ import {
 } from '../src/swagger-converter';
 
 describe('swaggerToTerraform', function () {
+    // folders
     const outDir = path.join(__dirname, 'temp');
-    const apiTerraformFile = outDir + '/api.tf';
+    const serviceModuleFolder: string = path.join(outDir, 'service-module');
+
+    // files
+    const apiTfFile = path.join(serviceModuleFolder, 'api.tf');
+    const mainTfFile = path.join(serviceModuleFolder, 'main.tf');
     const uid = uuid.v4();
+
     let sandbox: SinonSandbox;
 
     let swaggerDoc: SwaggerDocument;
@@ -56,14 +62,50 @@ describe('swaggerToTerraform', function () {
         return del(outDir, { force: true });
     });
 
-    it('should create an api.tf file in the current directory', function () {
+    it('should create a main.tf file in the /service-module folder', function () {
         // Arrange
 
         // Act
         swaggerToTerraform(swaggerDoc);
 
         // Assert
-        fs.existsSync(apiTerraformFile).should.be.true;
+        fs.existsSync(mainTfFile).should.be.true;
+    });
+
+    it('should overwrite the main.tf file in the /service-module folder if it already exists', function () {
+        // Arrange
+        fs.mkdirSync(serviceModuleFolder);
+        fs.writeFileSync(mainTfFile, uid);
+
+        // Act
+        swaggerToTerraform(swaggerDoc);
+        const result = fs.readFileSync(mainTfFile, 'utf8');
+
+        // Assert
+        result.should.not.equal(uid);
+    });
+
+    it('should create an api.tf file in the /service-module folder', function () {
+        // Arrange
+
+        // Act
+        swaggerToTerraform(swaggerDoc);
+
+        // Assert
+        fs.existsSync(apiTfFile).should.be.true;
+    });
+
+    it('should overwrite the api.tf file in the /service-module folder if it already exists', function () {
+        // Arrange
+        fs.mkdirSync(serviceModuleFolder);
+        fs.writeFileSync(apiTfFile, uid);
+
+        // Act
+        swaggerToTerraform(swaggerDoc);
+        const result = fs.readFileSync(apiTfFile, 'utf8');
+
+        // Assert
+        result.should.not.equal(uid);
     });
 
     it('should call the callback function with an Error if the SwaggerDocument does not have at least one path', function () {
@@ -77,7 +119,7 @@ describe('swaggerToTerraform', function () {
         // Assert
         callback.should.have.been.calledOnce;
         callback.should.have.been.calledWithMatch(null, Error);
-        fs.existsSync(apiTerraformFile).should.be.false;
+        fs.existsSync(apiTfFile).should.be.false;
     });
 
     it('should call the callback function with an Error if the SwaggerDocument does not have at least one method', function () {
@@ -93,7 +135,7 @@ describe('swaggerToTerraform', function () {
         // Assert
         callback.should.have.been.calledOnce;
         callback.should.have.been.calledWithMatch(null, Error);
-        fs.existsSync(apiTerraformFile).should.be.false;
+        fs.existsSync(apiTfFile).should.be.false;
     });
 
     it('should create minimal api.tf file from minimimal swagger document', function () {
@@ -105,7 +147,7 @@ describe('swaggerToTerraform', function () {
 
         // Act
         swaggerToTerraform(swaggerDoc);
-        const result = fs.readFileSync(apiTerraformFile, 'utf8');
+        const result = fs.readFileSync(apiTfFile, 'utf8');
 
         // Assert
         result.should.equal(target);
