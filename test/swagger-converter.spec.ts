@@ -81,10 +81,10 @@ describe('swaggerToTerraform', function () {
         it('should create minimal api.tf file from minimimal swagger document', function () {
             // arrange
             const target =
-`resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {
-  name        = "\${var.service["name"]}"
-  description = "\${var.service["description"]}"
-}\n`;
+                `resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {\n` +
+                `  name        = "\${var.service["name"]}"\n` +
+                `  description = "\${var.service["description"]}"\n` +
+                `}\n`;
 
             // act
             swaggerToTerraform(swaggerDoc);
@@ -122,11 +122,11 @@ describe('swaggerToTerraform', function () {
         it('should create minimal main.tf file from minimimal swagger document', function () {
             // arrange
             const target =
-`variable "service" { type = "map" }
+                `variable "service" { type = "map" }\n\n` +
 
-provider "aws" {
-  region = "\${var.service["region"]}"
-}\n`;
+                `provider "aws" {\n` +
+                `  region = "\${var.service["region"]}"\n` +
+                `}\n`;
 
             // act
             swaggerToTerraform(swaggerDoc);
