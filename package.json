@@ -8,7 +8,9 @@
     "mocha": "node_modules/.bin/_mocha --recursive --compilers ts:ts-node/register --bail -R spec test/**/*.spec.ts",
     "pretest": "npm run lint",
     "test": "node_modules/.bin/nyc npm run mocha",
-    "tfp": "cd test/project/terraform && terraform get && terraform plan --var-file=\"service-config.tfvars\""
+    "tfp": "cd test/project/terraform && terraform get && terraform plan --var-file=\"service-config.tfvars\"",
+    "tfa": "cd test/project/terraform && terraform get && terraform apply --var-file=\"service-config.tfvars\"",
+    "tfd": "cd test/project/terraform && terraform destroy --var-file=\"service-config.tfvars\""
   },
   "keywords": [],
   "author": "",
