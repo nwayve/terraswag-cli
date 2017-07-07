@@ -125,6 +125,23 @@ describe('swaggerToTerraform', function () {
             // Assert
             result.should.not.equal(uid);
         });
+
+        it('should create minimal main.tf file from minimimal swagger document', function () {
+            // Arrange
+            const target =
+`variable "service" { type = "map" }
+
+provider "aws" {
+  region = "\${var.service["region"]}"
+}\n`;
+
+            // Act
+            swaggerToTerraform(swaggerDoc);
+            const result = fs.readFileSync(mainTfFile, 'utf8');
+
+            // Assert
+            result.should.equal(target);
+        });
     });
 
     describe('Validation', function () {

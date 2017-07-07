@@ -25,11 +25,12 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
     }
 
     const mainModuleTf = path.join(serviceModuleFolder, 'main.tf');
-    fs.writeFileSync(mainModuleTf, '');
+    const mainRender = renderMain();
+    fs.writeFileSync(mainModuleTf, mainRender);
 
     const apitf = path.join(serviceModuleFolder, 'api.tf');
-    const restApi = renderRestApi(swaggerDoc.info.title);
-    fs.writeFileSync(apitf, restApi);
+    const restApiRender = renderRestApi(swaggerDoc.info.title);
+    fs.writeFileSync(apitf, restApiRender);
 }
 
 function renderRestApi(name: string, description: string = ''): string {
@@ -39,7 +40,12 @@ function renderRestApi(name: string, description: string = ''): string {
             description: description
         }
     };
+
     return njk.render('aws-api-gateway-rest-api.tf.njk', data);
+}
+
+function renderMain(): string {
+    return njk.render('main.tf.njk');
 }
 
 function swaggerDocIsValid(swaggerDoc: SwaggerDocument, callback?: Function): boolean {
