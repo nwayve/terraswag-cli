@@ -12,6 +12,7 @@ chai.should();
 chai.use(sinonChai);
 
 // vendor
+import * as dedent from 'dedent';
 import * as del from 'del';
 import * as uuid from 'uuid';
 
@@ -121,12 +122,16 @@ describe('swaggerToTerraform', function () {
 
         it('should create minimal main.tf file from minimimal swagger document', function () {
             // arrange
-            const target =
-                `variable "service" { type = "map" }\n\n` +
+            const target = dedent
+                `terraform {
+                  required_version = ">= 0.9.3"
+                }
 
-                `provider "aws" {\n` +
-                `  region = "\${var.service["region"]}"\n` +
-                `}\n`;
+                variable "service" { type = "map" }
+
+                provider "aws" {
+                  region = "\${var.service["region"]}"
+                }\n`.replace(/\\\$/g, '$');
 
             // act
             swaggerToTerraform(swaggerDoc);
