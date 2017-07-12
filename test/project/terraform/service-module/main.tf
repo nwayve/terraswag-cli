@@ -1,3 +1,8 @@
+terraform {
+  required_version = ">= 0.9.3"
+}
+
+variable "lambdaArn" {}
 variable "service" { type = "map" }
 
 provider "aws" {

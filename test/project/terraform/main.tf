@@ -12,8 +12,9 @@ provider "aws" {
 }
 
 module "service_name" {
-  source  = "service-module"
-  service = "${var.service_config}"
+  source    = "service-module"
+  service   = "${var.service_config}"
+  lambdaArn = "${aws_lambda_function.test_lambda.arn}"
 }
 
 resource "aws_api_gateway_deployment" "development" {
@@ -26,4 +27,13 @@ resource "aws_api_gateway_deployment" "development" {
   variables = {
     "stage" = "development"
   }
+}
+
+resource "aws_lambda_function" "test_lambda" {
+  filename         = "../lambda_function_payload.zip"
+  function_name    = "test-service"
+  role             = "arn:aws:iam::827763215205:role/simple_lambda_Role"
+  handler          = "index.handler"
+  source_code_hash = "${base64sha256(file("../lambda_function_payload.zip"))}"
+  runtime          = "nodejs6.10"
 }
