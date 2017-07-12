@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "version": "2017-07-05T13:59:32Z",
-    "title": "test-api"
+    "title": "ticket-service"
   },
   "host": "xeewxsawz7.execute-api.us-west-2.amazonaws.com",
   "basePath": "/development",

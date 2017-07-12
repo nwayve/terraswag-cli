@@ -32,6 +32,7 @@ describe('swaggerToTerraform', function () {
     const apiTfFile = path.join(serviceModuleFolder, 'api.tf');
     const mainTfFile = path.join(serviceModuleFolder, 'main.tf');
     const minimalSwaggerDocJsonFile = path.join(testDataDir, 'minimal-swagger-doc.json');
+    const swaggerDocJsonFile = path.join(testDataDir, 'service-swagger-doc.json');
     const uid = uuid.v4();
 
     let sandbox: SinonSandbox;
@@ -47,7 +48,7 @@ describe('swaggerToTerraform', function () {
 
         process.chdir(outDir);
 
-        swaggerDoc = JSON.parse(fs.readFileSync(minimalSwaggerDocJsonFile, 'utf8'));
+        swaggerDoc = JSON.parse(fs.readFileSync(swaggerDocJsonFile, 'utf8'));
     });
 
     afterEach(function () {
@@ -81,11 +82,40 @@ describe('swaggerToTerraform', function () {
 
         it('should create minimal api.tf file from minimimal swagger document', function () {
             // arrange
-            const target =
-                `resource "aws_api_gateway_rest_api" "${swaggerDoc.info.title}" {\n` +
-                `  name        = "\${var.service["name"]}"\n` +
-                `  description = "\${var.service["description"]}"\n` +
-                `}\n`;
+            swaggerDoc = JSON.parse(fs.readFileSync(minimalSwaggerDocJsonFile, 'utf8'));
+            const serviceName = swaggerDoc.info.title;
+            const target = dedent
+                `resource "aws_api_gateway_rest_api" "${serviceName}" {
+                  name        = "\${var.service["name"]}"
+                  description = "\${var.service["description"]}"
+                }
+
+                output "rest_api_id" {
+                  value = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                }
+
+                #
+                # /
+                #
+
+                #
+                # GET
+                #
+                resource "aws_api_gateway_method" "get_root" {
+                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id   = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method   = "GET"
+                  authorization = "NONE"
+                }
+
+                resource "aws_api_gateway_integration" "get_root" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  type        = "MOCK"
+
+                  passthrough_behavior = "WHEN_NO_MATCH"
+                }\n`.replace(/\\\$/g, '$');
 
             // act
             swaggerToTerraform(swaggerDoc);

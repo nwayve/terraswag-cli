@@ -25,27 +25,38 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
     }
 
     const mainModuleTf = path.join(serviceModuleFolder, 'main.tf');
-    const mainRender = renderMain();
-    fs.writeFileSync(mainModuleTf, mainRender);
+    const mainRender = njk.render('main.njk');
+    fs.writeFileSync(mainModuleTf, mainRender, 'utf8');
 
     const apitf = path.join(serviceModuleFolder, 'api.tf');
-    const restApiRender = renderRestApi(swaggerDoc.info.title);
-    fs.writeFileSync(apitf, restApiRender);
-}
-
-function renderRestApi(name: string, description: string = ''): string {
-    const data = {
-        service: {
-            name: name,
-            description: description
-        }
+    const service = {
+        name: swaggerDoc.info.title,
+        description: ''
     };
+    fs.writeFileSync(apitf, njk.render('aws_api_gateway_rest_api.njk', { service: service }), 'utf8');
 
-    return njk.render('aws-api-gateway-rest-api.tf.njk', data);
+    if (_(swaggerDoc.paths).has('/')) {
+        fs.appendFileSync(apitf, '\n' + sectionComment('/'));
+
+        const orderedMethods = _(swaggerDoc.paths['/']).toPairs().sortBy(0).fromPairs().value();
+        _(orderedMethods).forEach(function (value: any, methodName: string, context: any) {
+            const path = {
+                method: methodName.toLowerCase(),
+                name: 'root'
+            };
+            fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
+            fs.appendFileSync(apitf, njk.render('aws_api_gateway_method.njk', { service: service, path: path }));
+            fs.appendFileSync(apitf, '\n' + njk.render('aws_api_gateway_integration.njk', { service: service, path: path }));
+        });
+    }
+
+    const orderedPaths = _(swaggerDoc.paths).omit('/').toPairs().sortBy(0).fromPairs().value();
+    _(orderedPaths).forEach(function (path: any, pathName: string, pathsObject: PathsObject) {
+    });
 }
 
-function renderMain(): string {
-    return njk.render('main.tf.njk');
+function sectionComment(sectionName: string) {
+    return `#\n# ${sectionName}\n#\n`;
 }
 
 function swaggerDocIsValid(swaggerDoc: SwaggerDocument, callback?: Function): boolean {
