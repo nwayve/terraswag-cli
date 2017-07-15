@@ -113,8 +113,100 @@ describe('swaggerToTerraform', function () {
                   resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
                   http_method = "\${aws_api_gateway_method.get_root.http_method}"
                   type        = "MOCK"
+                }\n`.replace(/\\\$/g, '$');
 
-                  passthrough_behavior = "WHEN_NO_MATCH"
+            // act
+            swaggerToTerraform(swaggerDoc);
+            const result = fs.readFileSync(apiTfFile, 'utf8');
+
+            // assert
+            result.should.equal(target);
+        });
+
+        xit('should handle multiple paths without creating multiple resources', function () {
+            // arrange
+            const serviceName = swaggerDoc.info.title;
+            const target = dedent
+                `resource "aws_api_gateway_rest_api" "${serviceName}" {
+                  name        = "\${var.service["name"]}"
+                  description = "\${var.service["description"]}"
+                }
+
+                output "rest_api_id" {
+                  value = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                }
+
+                #
+                # /
+                #
+
+                #
+                # GET
+                #
+                resource "aws_api_gateway_method" "get_root" {
+                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id   = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method   = "GET"
+                  authorization = "NONE"
+                }
+
+                resource "aws_api_gateway_integration" "get_root" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  type        = "MOCK"
+                }
+
+                #
+                # /foos
+                #
+                resource "aws_api_gateway_resource" "foos" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  parent_id   = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  path_part   = "foos"
+                }
+
+                #
+                # GET
+                #
+                resource "aws_api_gateway_method" "get_foos" {
+                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id   = "\${aws_api_gateway_resource.foos.id}"
+                  http_method   = "GET"
+                  authorization = "NONE"
+                }
+
+                resource "aws_api_gateway_integration" "get_foos" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  type        = "MOCK"
+                }
+
+                #
+                # /foos/{fooId}
+                #
+                resource "aws_api_gateway_resource" "foos_-fooId-" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  parent_id   = "\${aws_api_gateway_resource.foos.id}"
+                  path_part   = "{fooId}"
+                }
+
+                #
+                # GET
+                #
+                resource "aws_api_gateway_method" "get_foos_-fooId-" {
+                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id   = "\${aws_api_gateway_resource.foos_-fooId-.id}"
+                  http_method   = "GET"
+                  authorization = "NONE"
+                }
+
+                resource "aws_api_gateway_integration" "get_foos" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  type        = "MOCK"
                 }\n`.replace(/\\\$/g, '$');
 
             // act
