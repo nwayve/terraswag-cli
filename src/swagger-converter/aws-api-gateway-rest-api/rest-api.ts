@@ -2,7 +2,7 @@
 import { compile } from 'handlebars';
 
 // Project
-import { RestApiServiceConfiguration as ServiceConfiguration } from './rest-api.configuration';
+import { RestApiServiceConfiguration as ServiceConfiguration } from './index';
 
 const TEMPLATE =
 `resource "aws_api_gateway_rest_api" "{{service.name}}" {
