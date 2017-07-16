@@ -1,7 +1,7 @@
-// Vendor
+// vendor
 import { compile } from 'handlebars';
 
-// Project
+// project
 import { RestApiServiceConfiguration as ServiceConfiguration } from './index';
 
 const TEMPLATE =
