@@ -5,42 +5,33 @@ import { mapValues } from 'lodash';
 // project
 import { ApiMethodConfiguration, HttpVerbs, AuthorizationTypes } from './index';
 
-// *Note: The 'resource_id' property is intentionally missing a trailing '}'
-//          handlebars can't deal with trailing '}}}', so induded it in 'identifier' value.
 const TEMPLATE = `\
 resource "aws_api_gateway_method" "{{method.name}}" {
   rest_api_id   = "\${aws_api_gateway_rest_api.{{method.serviceName}}.id}"
-  resource_id   = "\${aws_api_gateway_{{resource.type}}.{{resource.name}}.{{resource.identifier}}"
+  resource_id   = "\${aws_api_gateway_rest_api.{{method.serviceName}}.root_resource_id}"
   http_method   = "{{method.httpVerb}}"
   authorization = "{{method.authorizationType}}"
 }
 `;
+
+const RESOURCE_TEMPLATE = TEMPLATE.replace(
+    'aws_api_gateway_rest_api.{{method.serviceName}}.root_resource_id',
+    'aws_api_gateway_resource.{{method.resourceName}}.id');
+
 export class AwsApiGatewayMethod {
     template = compile(TEMPLATE);
-    resourceConfig: object;
 
-    constructor(private config: ApiMethodConfiguration) {
-        this.resourceConfig = {
-            type: 'rest_api',
-            name: config.serviceName,
-            identifier: 'root_resource_id}'
-        };
-    }
+    constructor(private config: ApiMethodConfiguration) { }
 
     toTerraformString(): string {
         const methodConfig = mapValues(this.config, this.configValueMapper);
 
         if (methodConfig.resourceName && methodConfig.resourceName.length) {
-            this.resourceConfig = {
-                type: 'resource',
-                name: methodConfig.resourceName,
-                identifier: 'id}'
-            };
+            this.template = compile(RESOURCE_TEMPLATE);
         }
 
         return this.template({
-            method: methodConfig,
-            resource: this.resourceConfig
+            method: methodConfig
         });
     }
 
