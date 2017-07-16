@@ -72,5 +72,29 @@ describe('AwsApiGatewayResource', function () {
             // assert
             templateString.should.equal(targetTerraformString);
         });
+
+        it('should create a terraform resource template for a route parameter', function () {
+            // arrange
+            config = {
+                name: 'foos_-fooId-',
+                serviceName: 'test-service',
+                parentName: 'foos',
+                pathPart: '{fooId}'
+            };
+
+            const targetTerraformString = dedent
+                `resource "aws_api_gateway_resource" "foos_-fooId-" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.test-service.id}"
+                  parent_id   = "\${aws_api_gateway_resource.foos.id}"
+                  path_part   = "{fooId}"
+                }\n`.replace(/\\\$/g, '$');
+
+            // act
+            resource = new AwsApiGatewayResource(config);
+            const templateString = resource.toTerraformString();
+
+            // assert
+            templateString.should.equal(targetTerraformString);
+        });
     });
 });
