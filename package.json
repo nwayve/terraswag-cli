@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "node node_modules/tslint/bin/tslint -c tslint.json -s node_modules/custom-tslint-formatters/formatters -t grouped --fix 'src/**/*.ts?(x)'",
-    "mocha": "node_modules/.bin/_mocha --recursive --compilers ts:ts-node/register --bail -R spec test/**/*.spec.ts",
+    "mocha": "node_modules/.bin/_mocha --recursive --compilers ts:ts-node/register --bail -R spec **/*.spec.ts",
     "pretest": "npm run lint",
     "test": "node_modules/.bin/nyc npm run mocha",
     "tfp": "cd test/project/terraform && terraform get && terraform plan --var-file=\"service-config.tfvars\"",
@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "handlebars": "^4.0.10",
     "lodash": "^4.17.4",
     "nunjucks": "^3.0.1"
   },
@@ -23,6 +24,7 @@
     "@types/chai": "^4.0.1",
     "@types/dedent": "^0.7.0",
     "@types/del": "^2.2.32",
+    "@types/handlebars": "^4.0.34",
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.7",
