@@ -15,7 +15,7 @@
                 "ts:ts-node/register",
                 "--bail",
                 "-R", "spec",
-                "${workspaceRoot}/test/**/*.spec.ts"],
+                "${workspaceRoot}/**/*.spec.ts"],
             "cwd": "${workspaceRoot}",
             "outFiles": []
         }
