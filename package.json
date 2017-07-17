@@ -17,8 +17,7 @@
   "license": "ISC",
   "dependencies": {
     "handlebars": "^4.0.10",
-    "lodash": "^4.17.4",
-    "nunjucks": "^3.0.1"
+    "lodash": "^4.17.4"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
@@ -28,7 +27,6 @@
     "@types/lodash": "^4.14.68",
     "@types/mocha": "^2.2.41",
     "@types/node": "^8.0.7",
-    "@types/nunjucks": "0.0.32",
     "@types/sinon": "^2.3.2",
     "@types/sinon-chai": "^2.7.28",
     "@types/uuid": "^3.0.0",

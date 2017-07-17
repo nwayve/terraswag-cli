@@ -3,14 +3,28 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Vendor
+import { compile } from 'handlebars';
 import * as _ from 'lodash';
-import * as njk from 'nunjucks';
-njk.configure(path.join(__dirname, 'templates'));
 
 // Project
-import { SwaggerDocument, PathsObject } from './models';
+import {
+    SwaggerDocument, PathsObject
+} from '../swagger-converter';
+import * as Swaggearth from '../swagger-converter';
 
 const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
+
+const MAIN_TEMPLATE = `\
+terraform {
+  required_version = ">= 0.9.3"
+}
+
+variable "service" { type = "map" }
+
+provider "aws" {
+  region = "\${var.service["region"]}"
+}
+`;
 
 export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Function): void {
     const cb = callback || function () { };
@@ -25,7 +39,7 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
     }
 
     const mainModuleTf = path.join(serviceModuleFolder, 'main.tf');
-    const mainRender = njk.render('main.njk');
+    const mainRender = compile(MAIN_TEMPLATE)(null);
     fs.writeFileSync(mainModuleTf, mainRender, 'utf8');
 
     const apitf = path.join(serviceModuleFolder, 'api.tf');
@@ -33,7 +47,8 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
         name: swaggerDoc.info.title,
         description: ''
     };
-    fs.writeFileSync(apitf, njk.render('aws_api_gateway_rest_api.njk', { service: service }), 'utf8');
+    const restApi = new Swaggearth.AwsApiGatewayRestApi(service).toTerraformString();
+    fs.writeFileSync(apitf, restApi, 'utf8');
 
     if (_(swaggerDoc.paths).has('/')) {
         fs.appendFileSync(apitf, '\n' + sectionComment('/'));
@@ -44,9 +59,20 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
                 method: methodName.toLowerCase(),
                 name: 'root'
             };
+            const method = new Swaggearth.AwsApiGatewayMethod({
+                name: `${path.method}_root`,
+                serviceName: service.name,
+                httpVerb: (<any>Swaggearth.HttpVerbs)[methodName.toUpperCase()],
+                authorizationType: Swaggearth.AuthorizationTypes.NONE
+            });
+            const integration = new Swaggearth.AwsApiGatewayIntegration({
+                name: `${path.method}_root`,
+                serviceName: service.name,
+                type: Swaggearth.IntegrationTypes.MOCK
+            });
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
-            fs.appendFileSync(apitf, njk.render('aws_api_gateway_method.njk', { service: service, path: path }));
-            fs.appendFileSync(apitf, '\n' + njk.render('aws_api_gateway_integration.njk', { service: service, path: path }));
+            fs.appendFileSync(apitf, method.toTerraformString());
+            fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
         });
     }
 
