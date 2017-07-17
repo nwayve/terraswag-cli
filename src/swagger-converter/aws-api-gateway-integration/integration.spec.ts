@@ -75,5 +75,32 @@ describe('AwsApiGatewayIntegration', function () {
             // assert
             templateString.should.equal(targetTerraformString);
         });
+
+        it('should create a terraform integration template on a parent resource configured for AWS Lambda', function () {
+            // arrange
+            config = {
+                name: 'get_foos',
+                serviceName: 'test-service',
+                resourceName: 'foos',
+                type: IntegrationTypes.AWS
+            };
+
+            const targetTerraformString = dedent
+                `resource "aws_api_gateway_integration" "get_foos" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.test-service.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  type        = "AWS"
+                  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.service["lambdaArn"]}/invocations"
+                  integration_http_method = "POST"
+                }\n`.replace(/\\\$/g, '$');
+
+            // act
+            integration = new AwsApiGatewayIntegration(config);
+            const templateString = integration.toTerraformString();
+
+            // assert
+            templateString.should.equal(targetTerraformString);
+        });
     });
 });

@@ -1,7 +1,7 @@
 export enum IntegrationTypes {
-    HTTP,
-    MOCK,
     AWS,
     AWS_PROXY,
-    HTTP_PROXY
+    HTTP,
+    HTTP_PROXY,
+    MOCK
 }
