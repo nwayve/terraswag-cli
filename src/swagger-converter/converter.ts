@@ -12,7 +12,7 @@ import {
 } from '../swagger-converter';
 import * as Swaggearth from '../swagger-converter';
 
-const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
+const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
 
 const MAIN_TEMPLATE = `\
 terraform {
@@ -90,7 +90,7 @@ function swaggerDocIsValid(swaggerDoc: SwaggerDocument, callback?: Function): bo
 
     const hasAtLeastOnePathAndMethod = _(swaggerDoc.paths)
         .pickBy((val: Object, key: string) => /^\/.*$/g.test(key))
-        .find((val: Object) => methods.some(m => _(val).has(m)));
+        .find((val: Object) => METHODS.some(m => _(val).has(m)));
 
     if (!hasAtLeastOnePathAndMethod) {
         cb && cb(null, new Error('Insufficient paths or methods.  To create an API Gateway at least one path and one method is required.'));
