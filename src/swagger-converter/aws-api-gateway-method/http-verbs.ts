@@ -4,6 +4,6 @@ export enum HttpVerbs {
     PUT,
     DELETE,
     HEAD,
-    OPTION,
+    OPTIONS,
     ANY
 }

@@ -8,9 +8,16 @@ import * as _ from 'lodash';
 
 // Project
 import {
-    SwaggerDocument, PathsObject
-} from '../swagger-converter';
-import * as Swaggearth from '../swagger-converter';
+    AuthorizationTypes,
+    AwsApiGatewayIntegration,
+    AwsApiGatewayMethod,
+    AwsApiGatewayResource,
+    AwsApiGatewayRestApi,
+    HttpVerbs,
+    IntegrationTypes,
+    PathsObject,
+    SwaggerDocument
+} from './index';
 
 const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch'];
 
@@ -23,6 +30,10 @@ variable "service" { type = "map" }
 
 provider "aws" {
   region = "\${var.service["region"]}"
+  assume_role {
+    role_arn     = "\${var.service["assumeRoleArn"]}"
+    session_name = "swagger-terraform-deployment"
+  }
 }
 `;
 
@@ -33,7 +44,7 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
         return;
     }
 
-    const serviceModuleFolder = path.join(process.cwd(), 'service-module');
+    const serviceModuleFolder = path.join(process.cwd(), 'api-module');
     if (!fs.existsSync(serviceModuleFolder)) {
         fs.mkdirSync(serviceModuleFolder);
     }
@@ -47,38 +58,93 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
         name: swaggerDoc.info.title,
         description: ''
     };
-    const restApi = new Swaggearth.AwsApiGatewayRestApi(service).toTerraformString();
+    const restApi = new AwsApiGatewayRestApi(service).toTerraformString();
     fs.writeFileSync(apitf, restApi, 'utf8');
 
     if (_(swaggerDoc.paths).has('/')) {
         fs.appendFileSync(apitf, '\n' + sectionComment('/'));
 
-        const orderedMethods = _(swaggerDoc.paths['/']).toPairs().sortBy(0).fromPairs().value();
-        _(orderedMethods).forEach(function (value: any, methodName: string, context: any) {
-            const path = {
-                method: methodName.toLowerCase(),
-                name: 'root'
-            };
-            const method = new Swaggearth.AwsApiGatewayMethod({
-                name: `${path.method}_root`,
+        const orderedPaths = _(swaggerDoc.paths['/']).toPairs().sortBy(0).fromPairs().value();
+        _(orderedPaths).forEach(function (value: any, methodName: string, context: any) {
+            const method = new AwsApiGatewayMethod({
+                name: `${methodName}_root`,
                 serviceName: service.name,
-                httpVerb: (<any>Swaggearth.HttpVerbs)[methodName.toUpperCase()],
-                authorizationType: Swaggearth.AuthorizationTypes.NONE
+                httpVerb: (<any>HttpVerbs)[methodName.toUpperCase()],
+                authorizationType: AuthorizationTypes.NONE
             });
-            const integration = new Swaggearth.AwsApiGatewayIntegration({
-                name: `${path.method}_root`,
+            const integration = new AwsApiGatewayIntegration({
+                name: `${methodName}_root`,
                 serviceName: service.name,
-                type: Swaggearth.IntegrationTypes.MOCK
+                type: IntegrationTypes.MOCK
             });
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());
             fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
         });
     }
-
+    const createdResources: string[] = [];
     const orderedPaths = _(swaggerDoc.paths).omit('/').toPairs().sortBy(0).fromPairs().value();
-    _(orderedPaths).forEach(function (path: any, pathName: string, pathsObject: PathsObject) {
+    _(orderedPaths).forEach(function (pathItem: any, pathName: string) {
+        const pathSegments = _.split(pathName, '/');
+
+        // reference parent resource
+        let parentName = pathSegments.slice(0, -1).join('/').replace(/\//g, '_').replace(/\{|\}/g, '-').substr(1);
+        if (parentName && !_(createdResources).includes(parentName)) {
+            fs.appendFileSync(apitf, createResourceFromPath(pathSegments.slice(0, -1).join('/'), service.name, createdResources));
+        }
+
+        // create target resource
+        const resourceName = pathName.replace(/\//g, '_').replace(/\{|\}/g, '-').substr(1);
+        const resource = new AwsApiGatewayResource({
+            name: resourceName,
+            serviceName: service.name,
+            parentName: parentName,
+            pathPart: pathSegments.slice(-1)[0]
+        });
+        fs.appendFileSync(apitf, '\n' + sectionComment(pathName));
+        fs.appendFileSync(apitf, resource.toTerraformString());
+        createdResources.push(resourceName);
+
+        // loop through each OperationObject
+        _(pathItem).keys().intersection(METHODS).forEach(function (methodName) {
+            const method = new AwsApiGatewayMethod({
+                name: `${methodName}_${resourceName}`,
+                serviceName: service.name,
+                resourceName: resourceName,
+                httpVerb: (<any>HttpVerbs)[methodName.toUpperCase()],
+                authorizationType: AuthorizationTypes.NONE
+            });
+            const integration = new AwsApiGatewayIntegration({
+                name: `${methodName}_${resourceName}`,
+                serviceName: service.name,
+                resourceName: resourceName,
+                type: IntegrationTypes.MOCK
+            });
+            fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
+            fs.appendFileSync(apitf, method.toTerraformString());
+            fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
+        });
     });
+}
+
+function createResourceFromPath(pathName: string, serviceName: string, createdResources: string[]): string {
+    const pathSegments = _.split(pathName, '/');
+
+    let parentName = pathSegments.slice(0, -1).join('/').replace(/\//g, '_').replace(/\{|\}/g, '-').substr(1);
+    if (parentName && !_(createdResources).includes(parentName)) {
+        return createResourceFromPath(pathSegments.slice(0, -1).join('/'), serviceName, createdResources);
+    }
+
+    const resourceName = pathName.replace(/\//g, '_').replace(/\{|\}/g, '-').substr(1);
+    const resource = new AwsApiGatewayResource({
+        name: resourceName,
+        serviceName: serviceName,
+        parentName: parentName,
+        pathPart: pathSegments.slice(-1)[0]
+    });
+
+    createdResources.push(resourceName);
+    return `\n${sectionComment(pathName)}${resource.toTerraformString()}`;
 }
 
 function sectionComment(sectionName: string) {

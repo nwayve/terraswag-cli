@@ -4,11 +4,6 @@
     "version": "2017-07-05T13:59:32Z",
     "title": "ticket-service"
   },
-  "host": "xeewxsawz7.execute-api.us-west-2.amazonaws.com",
-  "basePath": "/development",
-  "schemes": [
-    "https"
-  ],
   "paths": {
     "/": {
       "get": {
@@ -39,12 +34,6 @@
           "type": "mock"
         }
       }
-    }
-  },
-  "definitions": {
-    "Empty": {
-      "type": "object",
-      "title": "Empty Schema"
     }
   }
 }
