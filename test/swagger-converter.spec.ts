@@ -20,7 +20,7 @@ import * as uuid from 'uuid';
 import {
     swaggerToTerraform,
     SwaggerDocument
-} from '../src/swagger-converter';
+} from '../lib/swagger-converter';
 
 describe('swaggerToTerraform', function () {
     // folders

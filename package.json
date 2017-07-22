@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "lint": "node node_modules/tslint/bin/tslint -c tslint.json -s node_modules/custom-tslint-formatters/formatters -t grouped --fix 'src/**/*.ts?(x)'",
+    "lint": "node node_modules/tslint/bin/tslint -c tslint.json -s node_modules/custom-tslint-formatters/formatters -t grouped --fix 'lib/**/*.ts?(x)'",
     "mocha": "node_modules/.bin/_mocha --recursive --compilers ts:ts-node/register --bail -R spec **/*.spec.ts",
     "pretest": "npm run lint",
     "test": "node_modules/.bin/nyc npm run mocha",
