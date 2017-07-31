@@ -55,3 +55,10 @@ export class AwsApiGatewayIntegration {
         }
     }
 }
+
+export interface IntegrationConfiguration {
+    name: string;
+    serviceName: string;
+    resourceName?: string;
+    type: IntegrationTypes;
+}

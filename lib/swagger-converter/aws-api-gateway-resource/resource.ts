@@ -1,9 +1,6 @@
 // vendor
 import { compile } from 'handlebars';
 
-// project
-import { ResourceConfiguration } from './index';
-
 const TEMPLATE = `\
 resource "aws_api_gateway_resource" "{{resource.name}}" {
   rest_api_id = "\${aws_api_gateway_rest_api.{{resource.serviceName}}.id}"
@@ -27,4 +24,11 @@ export class AwsApiGatewayResource {
         }
         return this.template({ resource: this.config });
     }
+}
+
+export interface ResourceConfiguration {
+    name: string;
+    serviceName: string;
+    parentName?: string;
+    pathPart: string;
 }

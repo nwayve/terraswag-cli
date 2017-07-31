@@ -1,9 +1,6 @@
 // vendor
 import { compile } from 'handlebars';
 
-// project
-import { RestApiServiceConfiguration as ServiceConfiguration } from './index';
-
 const TEMPLATE =
 `resource "aws_api_gateway_rest_api" "{{service.name}}" {
   name        = "\${var.service["name"]}"
@@ -18,9 +15,13 @@ output "rest_api_id" {
 export class AwsApiGatewayRestApi {
     template = compile(TEMPLATE);
 
-    constructor(private service: ServiceConfiguration) { }
+    constructor(private service: RestApiServiceConfiguration) { }
 
     toTerraformString(): string {
         return this.template({ service: this.service });
     }
+}
+
+export interface RestApiServiceConfiguration {
+    name: string;
 }

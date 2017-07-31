@@ -3,7 +3,7 @@ import { compile } from 'handlebars';
 import { mapValues } from 'lodash';
 
 // project
-import { ApiMethodConfiguration, HttpVerbs, AuthorizationTypes } from './index';
+import { HttpVerbs, AuthorizationTypes } from './index';
 
 const TEMPLATE = `\
 resource "aws_api_gateway_method" "{{method.name}}" {
@@ -45,4 +45,12 @@ export class AwsApiGatewayMethod {
                 return value;
         }
     }
+}
+
+export interface ApiMethodConfiguration {
+    name: string;
+    serviceName: string;
+    resourceName?: string;
+    httpVerb: HttpVerbs;
+    authorizationType: AuthorizationTypes;
 }

@@ -12,3 +12,7 @@ export interface InfoObject {
 export interface PathsObject {
     [key: string]: any;
 }
+
+export interface ServiceConfiguration {
+    name: string;
+}
