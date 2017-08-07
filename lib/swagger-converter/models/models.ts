@@ -1,18 +1,18 @@
-export interface SwaggerDocument {
+export class SwaggerDocument {
     swagger: string;
     info: InfoObject;
     paths: PathsObject;
 }
 
-export interface InfoObject {
+export class InfoObject {
     title: string;
     version: string;
 }
 
-export interface PathsObject {
+export class PathsObject {
     [key: string]: any;
 }
 
-export interface ServiceConfiguration {
+export class ServiceConfiguration {
     name: string;
 }

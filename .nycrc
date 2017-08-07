@@ -4,7 +4,8 @@
   ],
   "exclude": [
     "**/*.spec.ts",
-    "node_modules"
+    "lib/index.ts",
+    "lib/swagger-converter/models"
   ],
   "extension": [
     ".ts"
