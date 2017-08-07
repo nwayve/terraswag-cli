@@ -7,3 +7,6 @@ dist
 # Test artifacts
 .nyc_output
 coverage
+
+# Test project artifacts
+test/project/terraform/.terraform

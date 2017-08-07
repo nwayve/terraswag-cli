@@ -1,0 +1,124 @@
+{
+  "*swagger": "2.0",
+  "*info": {
+    "*version": "1.0.1",
+    "*title": "name",
+    "description": "brief description",
+    "termsOfService": "ToS for API.",
+    "contact": {
+      "name": "name of contact/organization",
+      "url": "http(s)://url.pointing.to/contact/information",
+      "email": "email@ddress"
+    },
+    "license": {
+      "name": "license name",
+      "url": "http(s)://url.pointing.to/license"
+    }
+  },
+  "*paths": {},
+  "host": "host (name|ip) serving API. e.g. https://api.hostname.com:1234 or 127.0.0.1",
+  "basePath": "base path (if any) relative to the host e.g. /development",
+  "schemes": [
+    "list of transfer protocols",
+    "http",
+    "https",
+    "etc..."
+  ],
+  "consumes": [
+    "default list of MIME types the API can consume. Specific paths can override",
+    "application/json",
+    "application/xml",
+    "etc..."
+  ],
+  "produces": [
+    "default list of MIME types the API produces. Specific paths can override"
+  ],
+  "definitions": {
+    "{name}": {
+      "-seeDocsForMore": "https://swagger.io/specification/#schemaObject"
+    }
+  },
+  "parameters": {
+    "{name}": {
+      "-seeDocsForMore": "https://swagger.io/specification/#parameterObject"
+    }
+  },
+  "responses": {
+    "{name}": {
+      "*description": "short description, GFM syntax allowed",
+      "schema": {
+        "-seeDocsForMore": "https://swagger.io/specification/#schemaObject"
+      },
+      "headers": {
+        "{name}": {
+          "*type": "object type: (string|number|integer|boolean|array)",
+          "*items": {
+            "*type": "object type: (string|number|integer|boolean|array)",
+            "*items": {},
+            "-seeDocsForMore": "https://swagger.io/specification/#itemsObject"
+          },
+          "-seeDocsForMore": "https://swagger.io/specification/#headerObject"
+        }
+      },
+      "examples": {
+        "{mime-type}": {
+          "anything": "goes",
+          "exampleOf": "object being returned"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "{name}": {
+      "*type": "type of security scheme e.g. basic|apiKey|oauth2|etc...",
+      "*name": "name of header or query parameter to be used",
+      "*in": "location of API key (query|header)",
+      "*flow": "flow used by OAuth2 (implicit|password|application|accessCode)",
+      "*authorizationUrl": "https://auth.url/used-for/this/flow",
+      "*tokenUrl": "https://token/url/to-be/used-for/this/flow",
+      "*scopes": {
+        "{name}": "map between scope and short description"
+      },
+      "description": "brief description"
+    },
+    "foo_auth": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
+    "bar_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "https://url",
+      "flow": "implicit",
+      "scopes": {
+        "read:bar": "read the bar"
+      }
+    }
+  },
+  "security": [
+    {
+      "{name}": [
+        "name must correspond to a security scheme declared in 'securityDefinitions'",
+        "if securityDefinition type is 'oath2', values are a list of scopes"
+      ],
+      "foo_auth": [],
+      "bar_auth": [
+        "read:bar"
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "*name": "tag name",
+      "description": "brief description of tag",
+      "externalDocs": {
+        "*url": "*http(s)://url.pointing.to/target/documentation",
+        "description": "description of target documentation"
+      }
+    }
+  ],
+  "externalDocs": {
+    "*url": "*http(s)://url.pointing.to/target/documentation",
+    "description": "description of target documentation"
+  }
+}

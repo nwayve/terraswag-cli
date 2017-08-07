@@ -56,7 +56,8 @@
     ],
     "ter-indent": [
       true,
-      4
+      4,
+      { "SwitchCase": 1 }
     ],
     "no-eval": true,
     "no-internal-module": true,
