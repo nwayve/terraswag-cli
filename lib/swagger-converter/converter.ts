@@ -37,10 +37,8 @@ provider "aws" {
 }
 `;
 
-export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Function): void {
-    const cb = callback || function () { };
-
-    if (!swaggerDocIsValid(swaggerDoc, cb)) {
+export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Function | undefined): void {
+    if (!swaggerDocIsValid(swaggerDoc, callback)) {
         return;
     }
 
