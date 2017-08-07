@@ -1,8 +1,8 @@
 {
   "swagger": "2.0",
   "info": {
-    "version": "2017-07-05T13:59:32Z",
-    "title": "ticket-service"
+    "version": "any",
+    "title": "minimal-service"
   },
   "paths": {
     "/": {

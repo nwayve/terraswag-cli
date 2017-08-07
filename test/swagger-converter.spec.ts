@@ -11,6 +11,13 @@ import * as sinonChai from 'sinon-chai';
 chai.should();
 chai.use(sinonChai);
 
+// test-data
+import {
+  basicSwaggerDoc,
+  advancedSwaggerDoc,
+  serviceSwaggerDoc
+} from './data';
+
 // vendor
 import * as dedent from 'dedent';
 import * as del from 'del';
@@ -62,7 +69,7 @@ describe('swaggerToTerraform', function () {
             // arrange
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(basicSwaggerDoc);
 
             // assert
             fs.existsSync(apiTfFile).should.be.true;
@@ -74,7 +81,7 @@ describe('swaggerToTerraform', function () {
             fs.writeFileSync(apiTfFile, uid);
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(basicSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -83,8 +90,7 @@ describe('swaggerToTerraform', function () {
 
         it('should create minimal api.tf file from minimimal swagger document', function () {
             // arrange
-            swaggerDoc = JSON.parse(fs.readFileSync(minimalSwaggerDocJsonFile, 'utf8'));
-            const serviceName = swaggerDoc.info.title;
+            const serviceName = basicSwaggerDoc.info.title;
             const target = dedent
                 `resource "aws_api_gateway_rest_api" "${serviceName}" {
                   name        = "\${var.service["name"]}"
@@ -117,7 +123,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(basicSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -126,7 +132,7 @@ describe('swaggerToTerraform', function () {
 
         it('should handle multiple paths without creating multiple resources', function () {
             // arrange
-            const serviceName = swaggerDoc.info.title;
+            const serviceName = serviceSwaggerDoc.info.title;
             const target = dedent
                 `resource "aws_api_gateway_rest_api" "${serviceName}" {
                   name        = "\${var.service["name"]}"
@@ -211,7 +217,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(serviceSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -220,8 +226,7 @@ describe('swaggerToTerraform', function () {
 
         it('should handle parent path segments with not listed in the swagger paths', function () {
             // arrange
-            swaggerDoc = JSON.parse(fs.readFileSync(testServiceSwaggerDocJsonFile, 'utf8'));
-            const serviceName = swaggerDoc.info.title;
+            const serviceName = advancedSwaggerDoc.info.title;
             const target = dedent
                 `resource "aws_api_gateway_rest_api" "${serviceName}" {
                   name        = "\${var.service["name"]}"
@@ -341,7 +346,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(advancedSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -354,7 +359,7 @@ describe('swaggerToTerraform', function () {
             // arrange
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(basicSwaggerDoc);
 
             // assert
             fs.existsSync(mainTfFile).should.be.true;
@@ -366,7 +371,7 @@ describe('swaggerToTerraform', function () {
             fs.writeFileSync(mainTfFile, uid);
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(basicSwaggerDoc);
             const result = fs.readFileSync(mainTfFile, 'utf8');
 
             // assert
@@ -391,7 +396,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(swaggerDoc);
+            swaggerToTerraform(basicSwaggerDoc);
             const result = fs.readFileSync(mainTfFile, 'utf8');
 
             // assert
@@ -402,6 +407,7 @@ describe('swaggerToTerraform', function () {
     describe('Validation', function () {
         it('should call the callback function with an Error if the SwaggerDocument does not have at least one path', function () {
             // arrange
+            const swaggerDoc = basicSwaggerDoc;
             swaggerDoc.paths = {};
             const callback = sandbox.spy();
 
@@ -416,6 +422,7 @@ describe('swaggerToTerraform', function () {
 
         it('should call the callback function with an Error if the SwaggerDocument does not have at least one method', function () {
             // arrange
+            const swaggerDoc = basicSwaggerDoc;
             swaggerDoc.paths = {
                 '/': {}
             };
