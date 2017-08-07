@@ -3,7 +3,7 @@ import { compile } from 'handlebars';
 import { mapValues } from 'lodash';
 
 // project
-import { IntegrationConfiguration, IntegrationTypes } from './index';
+import { IntegrationConfiguration, IntegrationTypes, PassthroughBehaviors } from './index';
 
 const TEMPLATE = `\
 resource "aws_api_gateway_integration" "{{integration.name}}" {
@@ -13,8 +13,9 @@ resource "aws_api_gateway_integration" "{{integration.name}}" {
   type        = "{{integration.type}}"`;
 
 const LAMBDA_LINES = `
-  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.service["lambdaArn"]}/invocations"
-  integration_http_method = "POST"`;
+  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.lambdaArn}/invocations"
+  integration_http_method = "POST"
+  passthrough_behavior    = "{{integration.passthroughBehavior}}"`;
 
 const RESOURCE_TEMPLATE = TEMPLATE.replace(
     'aws_api_gateway_rest_api.{{integration.serviceName}}.root_resource_id',
@@ -48,6 +49,8 @@ export class AwsApiGatewayIntegration {
 
     private configValueMapper(value: any, key: string): any {
         switch (key) {
+            case 'passthroughBehavior':
+                return PassthroughBehaviors[value];
             case 'type':
                 return IntegrationTypes[value];
             default:
@@ -59,6 +62,14 @@ export class AwsApiGatewayIntegration {
 export interface IntegrationConfiguration {
     name: string;
     serviceName: string;
-    resourceName?: string;
     type: IntegrationTypes;
+    passthroughBehavior?: PassthroughBehaviors;
+    resourceName?: string;
 }
+
+// "{
+//   "uri": "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:827763215205:function:test-service/invocations",
+//   "passthroughBehavior": "when_no_match",
+//   "httpMethod": "GET",
+//   "type": "aws"
+// }"

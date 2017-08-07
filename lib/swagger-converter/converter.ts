@@ -15,6 +15,7 @@ import {
     AwsApiGatewayRestApi,
     HttpVerbs,
     IntegrationTypes,
+    PassthroughBehaviors,
     PathsObject,
     SwaggerDocument
 } from './index';
@@ -26,6 +27,7 @@ terraform {
   required_version = ">= 0.9.3"
 }
 
+variable "lambdaArn" { }
 variable "service" { type = "map" }
 
 provider "aws" {
@@ -70,10 +72,12 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
                 httpVerb: (<any>HttpVerbs)[methodName.toUpperCase()],
                 authorizationType: AuthorizationTypes.NONE
             });
+            const amzItegration = value['x-amazon-apigateway-integration'];
             const integration = new AwsApiGatewayIntegration({
                 name: `${methodName}_root`,
                 serviceName: service.name,
-                type: IntegrationTypes.MOCK
+                type: (<any>IntegrationTypes)[amzItegration.type.toUpperCase()],
+                passthroughBehavior: (<any>PassthroughBehaviors)[amzItegration.passthroughBehavior.toUpperCase()]
             });
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());
@@ -112,11 +116,13 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
                 httpVerb: (<any>HttpVerbs)[methodName.toUpperCase()],
                 authorizationType: AuthorizationTypes.NONE
             });
+            const amzItegration = pathItem[methodName]['x-amazon-apigateway-integration'];
             const integration = new AwsApiGatewayIntegration({
                 name: `${methodName}_${resourceName}`,
                 serviceName: service.name,
                 resourceName: resourceName,
-                type: IntegrationTypes.MOCK
+                type: (<any>IntegrationTypes)[amzItegration.type.toUpperCase()],
+                passthroughBehavior: (<any>PassthroughBehaviors)[amzItegration.passthroughBehavior.toUpperCase()]
             });
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());

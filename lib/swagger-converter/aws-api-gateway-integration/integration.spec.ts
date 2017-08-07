@@ -14,7 +14,8 @@ import * as dedent from 'dedent';
 import {
     AwsApiGatewayIntegration,
     IntegrationConfiguration,
-    IntegrationTypes
+    IntegrationTypes,
+    PassthroughBehaviors
 } from '../aws-api-gateway-integration';
 
 describe('AwsApiGatewayIntegration', function () {
@@ -82,7 +83,8 @@ describe('AwsApiGatewayIntegration', function () {
                 name: 'get_foos',
                 serviceName: 'test-service',
                 resourceName: 'foos',
-                type: IntegrationTypes.AWS
+                type: IntegrationTypes.AWS,
+                passthroughBehavior: PassthroughBehaviors.WHEN_NO_MATCH
             };
 
             const targetTerraformString = dedent
@@ -91,8 +93,9 @@ describe('AwsApiGatewayIntegration', function () {
                   resource_id = "\${aws_api_gateway_resource.foos.id}"
                   http_method = "\${aws_api_gateway_method.get_foos.http_method}"
                   type        = "AWS"
-                  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.service["lambdaArn"]}/invocations"
+                  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.lambdaArn}/invocations"
                   integration_http_method = "POST"
+                  passthrough_behavior    = "WHEN_NO_MATCH"
                 }\n`.replace(/\\\$/g, '$');
 
             // act

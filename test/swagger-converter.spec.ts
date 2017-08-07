@@ -13,9 +13,10 @@ chai.use(sinonChai);
 
 // test-data
 import {
-  basicSwaggerDoc,
-  advancedSwaggerDoc,
-  serviceSwaggerDoc
+  lambdaIntegrationSwaggerDoc,
+  minimalSwaggerDoc,
+  parentPathNoMethodSwaggerDoc,
+  repeatResourceNoDuplicatesSwaggerDoc
 } from './data';
 
 // vendor
@@ -69,7 +70,7 @@ describe('swaggerToTerraform', function () {
             // arrange
 
             // act
-            swaggerToTerraform(basicSwaggerDoc);
+            swaggerToTerraform(minimalSwaggerDoc);
 
             // assert
             fs.existsSync(apiTfFile).should.be.true;
@@ -81,7 +82,7 @@ describe('swaggerToTerraform', function () {
             fs.writeFileSync(apiTfFile, uid);
 
             // act
-            swaggerToTerraform(basicSwaggerDoc);
+            swaggerToTerraform(minimalSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -90,7 +91,7 @@ describe('swaggerToTerraform', function () {
 
         it('should create minimal api.tf file from minimimal swagger document', function () {
             // arrange
-            const serviceName = basicSwaggerDoc.info.title;
+            const serviceName = minimalSwaggerDoc.info.title;
             const target = dedent
                 `resource "aws_api_gateway_rest_api" "${serviceName}" {
                   name        = "\${var.service["name"]}"
@@ -123,7 +124,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(basicSwaggerDoc);
+            swaggerToTerraform(minimalSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -132,7 +133,7 @@ describe('swaggerToTerraform', function () {
 
         it('should handle multiple paths without creating multiple resources', function () {
             // arrange
-            const serviceName = serviceSwaggerDoc.info.title;
+            const serviceName = repeatResourceNoDuplicatesSwaggerDoc.info.title;
             const target = dedent
                 `resource "aws_api_gateway_rest_api" "${serviceName}" {
                   name        = "\${var.service["name"]}"
@@ -141,27 +142,6 @@ describe('swaggerToTerraform', function () {
 
                 output "rest_api_id" {
                   value = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                }
-
-                #
-                # /
-                #
-
-                #
-                # GET
-                #
-                resource "aws_api_gateway_method" "get_root" {
-                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  resource_id   = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
-                  http_method   = "GET"
-                  authorization = "NONE"
-                }
-
-                resource "aws_api_gateway_integration" "get_root" {
-                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
-                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
-                  type        = "MOCK"
                 }
 
                 #
@@ -217,7 +197,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(serviceSwaggerDoc);
+            swaggerToTerraform(repeatResourceNoDuplicatesSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -226,7 +206,7 @@ describe('swaggerToTerraform', function () {
 
         it('should handle parent path segments with not listed in the swagger paths', function () {
             // arrange
-            const serviceName = advancedSwaggerDoc.info.title;
+            const serviceName = parentPathNoMethodSwaggerDoc.info.title;
             const target = dedent
                 `resource "aws_api_gateway_rest_api" "${serviceName}" {
                   name        = "\${var.service["name"]}"
@@ -235,27 +215,6 @@ describe('swaggerToTerraform', function () {
 
                 output "rest_api_id" {
                   value = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                }
-
-                #
-                # /
-                #
-
-                #
-                # GET
-                #
-                resource "aws_api_gateway_method" "get_root" {
-                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  resource_id   = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
-                  http_method   = "GET"
-                  authorization = "NONE"
-                }
-
-                resource "aws_api_gateway_integration" "get_root" {
-                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
-                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
-                  type        = "MOCK"
                 }
 
                 #
@@ -291,6 +250,51 @@ describe('swaggerToTerraform', function () {
                   resource_id = "\${aws_api_gateway_resource.fizz_buzz.id}"
                   http_method = "\${aws_api_gateway_method.get_fizz_buzz.http_method}"
                   type        = "MOCK"
+                }\n`.replace(/\\\$/g, '$');
+
+            // act
+            swaggerToTerraform(parentPathNoMethodSwaggerDoc);
+            const result = fs.readFileSync(apiTfFile, 'utf8');
+
+            // assert
+            result.should.equal(target);
+        });
+
+        it('should handle lambda integrations', function () {
+            // arrange
+            const serviceName = lambdaIntegrationSwaggerDoc.info.title;
+            const target = dedent
+                `resource "aws_api_gateway_rest_api" "${serviceName}" {
+                  name        = "\${var.service["name"]}"
+                  description = "\${var.service["description"]}"
+                }
+
+                output "rest_api_id" {
+                  value = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                }
+
+                #
+                # /
+                #
+
+                #
+                # GET
+                #
+                resource "aws_api_gateway_method" "get_root" {
+                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id   = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method   = "GET"
+                  authorization = "NONE"
+                }
+
+                resource "aws_api_gateway_integration" "get_root" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  type        = "AWS"
+                  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.lambdaArn}/invocations"
+                  integration_http_method = "POST"
+                  passthrough_behavior    = "WHEN_NO_MATCH"
                 }
 
                 #
@@ -316,37 +320,14 @@ describe('swaggerToTerraform', function () {
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_resource.foos.id}"
                   http_method = "\${aws_api_gateway_method.get_foos.http_method}"
-                  type        = "MOCK"
-                }
-
-                #
-                # /foos/{fooId}
-                #
-                resource "aws_api_gateway_resource" "foos_-fooId-" {
-                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  parent_id   = "\${aws_api_gateway_resource.foos.id}"
-                  path_part   = "{fooId}"
-                }
-
-                #
-                # GET
-                #
-                resource "aws_api_gateway_method" "get_foos_-fooId-" {
-                  rest_api_id   = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  resource_id   = "\${aws_api_gateway_resource.foos_-fooId-.id}"
-                  http_method   = "GET"
-                  authorization = "NONE"
-                }
-
-                resource "aws_api_gateway_integration" "get_foos_-fooId-" {
-                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
-                  resource_id = "\${aws_api_gateway_resource.foos_-fooId-.id}"
-                  http_method = "\${aws_api_gateway_method.get_foos_-fooId-.http_method}"
-                  type        = "MOCK"
+                  type        = "AWS"
+                  uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.lambdaArn}/invocations"
+                  integration_http_method = "POST"
+                  passthrough_behavior    = "WHEN_NO_MATCH"
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(advancedSwaggerDoc);
+            swaggerToTerraform(lambdaIntegrationSwaggerDoc);
             const result = fs.readFileSync(apiTfFile, 'utf8');
 
             // assert
@@ -359,7 +340,7 @@ describe('swaggerToTerraform', function () {
             // arrange
 
             // act
-            swaggerToTerraform(basicSwaggerDoc);
+            swaggerToTerraform(minimalSwaggerDoc);
 
             // assert
             fs.existsSync(mainTfFile).should.be.true;
@@ -371,7 +352,7 @@ describe('swaggerToTerraform', function () {
             fs.writeFileSync(mainTfFile, uid);
 
             // act
-            swaggerToTerraform(basicSwaggerDoc);
+            swaggerToTerraform(minimalSwaggerDoc);
             const result = fs.readFileSync(mainTfFile, 'utf8');
 
             // assert
@@ -385,6 +366,7 @@ describe('swaggerToTerraform', function () {
                   required_version = ">= 0.9.3"
                 }
 
+                variable "lambdaArn" { }
                 variable "service" { type = "map" }
 
                 provider "aws" {
@@ -396,7 +378,7 @@ describe('swaggerToTerraform', function () {
                 }\n`.replace(/\\\$/g, '$');
 
             // act
-            swaggerToTerraform(basicSwaggerDoc);
+            swaggerToTerraform(minimalSwaggerDoc);
             const result = fs.readFileSync(mainTfFile, 'utf8');
 
             // assert
@@ -407,7 +389,7 @@ describe('swaggerToTerraform', function () {
     describe('Validation', function () {
         it('should call the callback function with an Error if the SwaggerDocument does not have at least one path', function () {
             // arrange
-            const swaggerDoc = basicSwaggerDoc;
+            const swaggerDoc = minimalSwaggerDoc;
             swaggerDoc.paths = {};
             const callback = sandbox.spy();
 
@@ -422,7 +404,7 @@ describe('swaggerToTerraform', function () {
 
         it('should call the callback function with an Error if the SwaggerDocument does not have at least one method', function () {
             // arrange
-            const swaggerDoc = basicSwaggerDoc;
+            const swaggerDoc = minimalSwaggerDoc;
             swaggerDoc.paths = {
                 '/': {}
             };
