@@ -84,12 +84,13 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());
             fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
-            for (const regexPattern of Object.keys(amzItegration.responses)) {
-                const response = amzItegration.responses[regexPattern];
+            for (const selectionPattern of Object.keys(amzItegration.responses)) {
+                const response = amzItegration.responses[selectionPattern];
                 const integrationResponse = new AwsApiGatewayIntegrationResponse({
                     name: `${methodName}_root`,
                     serviceName: service.name,
-                    statusCode: response.statusCode
+                    statusCode: response.statusCode,
+                    selectionPattern: selectionPattern === 'default' ? void 0 : selectionPattern
                 });
                 fs.appendFileSync(apitf, '\n' + integrationResponse.toTerraformString());
             }
@@ -146,13 +147,14 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());
             fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
-            for (const regexPattern of Object.keys(amzItegration.responses)) {
-                const response = amzItegration.responses[regexPattern];
+            for (const selectionPattern of Object.keys(amzItegration.responses)) {
+                const response = amzItegration.responses[selectionPattern];
                 const integrationResponse = new AwsApiGatewayIntegrationResponse({
                     name: `${methodName}_${resourceName}`,
                     resourceName: resourceName,
                     serviceName: service.name,
-                    statusCode: response.statusCode
+                    statusCode: response.statusCode,
+                    selectionPattern: selectionPattern === 'default' ? void 0 : selectionPattern
                 });
                 fs.appendFileSync(apitf, '\n' + integrationResponse.toTerraformString());
             }

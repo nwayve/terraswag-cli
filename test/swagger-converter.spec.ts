@@ -124,10 +124,11 @@ describe('swaggerToTerraform', function () {
                 }
 
                 resource "aws_api_gateway_integration_response" "get_root_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_root"]
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
                   http_method = "\${aws_api_gateway_method.get_root.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_root_200.status_code}"
                 }
 
                 resource "aws_api_gateway_method_response" "get_root_200" {
@@ -185,10 +186,11 @@ describe('swaggerToTerraform', function () {
                 }
 
                 resource "aws_api_gateway_integration_response" "get_foos_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_foos"]
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_resource.foos.id}"
                   http_method = "\${aws_api_gateway_method.get_foos.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_foos_200.status_code}"
                 }
 
                 resource "aws_api_gateway_method_response" "get_foos_200" {
@@ -225,10 +227,11 @@ describe('swaggerToTerraform', function () {
                 }
 
                 resource "aws_api_gateway_integration_response" "get_foos_-fooId-_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_foos_-fooId-"]
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_resource.foos_-fooId-.id}"
                   http_method = "\${aws_api_gateway_method.get_foos_-fooId-.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_foos_-fooId-_200.status_code}"
                 }
 
                 resource "aws_api_gateway_method_response" "get_foos_-fooId-_200" {
@@ -295,10 +298,11 @@ describe('swaggerToTerraform', function () {
                 }
 
                 resource "aws_api_gateway_integration_response" "get_fizz_buzz_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_fizz_buzz"]
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_resource.fizz_buzz.id}"
                   http_method = "\${aws_api_gateway_method.get_fizz_buzz.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_fizz_buzz_200.status_code}"
                 }
 
                 resource "aws_api_gateway_method_response" "get_fizz_buzz_200" {
@@ -354,10 +358,11 @@ describe('swaggerToTerraform', function () {
                 }
 
                 resource "aws_api_gateway_integration_response" "get_root_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_root"]
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
                   http_method = "\${aws_api_gateway_method.get_root.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_root_200.status_code}"
                 }
 
                 resource "aws_api_gateway_method_response" "get_root_200" {
@@ -397,10 +402,11 @@ describe('swaggerToTerraform', function () {
                 }
 
                 resource "aws_api_gateway_integration_response" "get_foos_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_foos"]
                   rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
                   resource_id = "\${aws_api_gateway_resource.foos.id}"
                   http_method = "\${aws_api_gateway_method.get_foos.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_foos_200.status_code}"
                 }
 
                 resource "aws_api_gateway_method_response" "get_foos_200" {

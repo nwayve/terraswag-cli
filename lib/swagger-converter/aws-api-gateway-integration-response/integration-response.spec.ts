@@ -36,10 +36,11 @@ describe('AwsApiGatewayIntegrationResponse', function () {
 
             const targetTerraformString = dedent
                 `resource "aws_api_gateway_integration_response" "get_root_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_root"]
                   rest_api_id = "\${aws_api_gateway_rest_api.test-service.id}"
                   resource_id = "\${aws_api_gateway_rest_api.test-service.root_resource_id}"
                   http_method = "\${aws_api_gateway_method.get_root.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_root_200.status_code}"
                 }\n`.replace(/\\\$/g, '$');
 
             // Act
@@ -61,10 +62,39 @@ describe('AwsApiGatewayIntegrationResponse', function () {
 
             const targetTerraformString = dedent
                 `resource "aws_api_gateway_integration_response" "get_foos_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_foos"]
                   rest_api_id = "\${aws_api_gateway_rest_api.test-service.id}"
                   resource_id = "\${aws_api_gateway_resource.foos.id}"
                   http_method = "\${aws_api_gateway_method.get_foos.http_method}"
-                  status_code = "200"
+                  status_code = "\${aws_api_gateway_method_response.get_foos_200.status_code}"
+                }\n`.replace(/\\\$/g, '$');
+
+            // act
+            integrationResponse = new AwsApiGatewayIntegrationResponse(config);
+            const templateString = integrationResponse.toTerraformString();
+
+            // assert
+            templateString.should.equal(targetTerraformString);
+        });
+
+        it('should set a select pattern', function () {
+            // arrange
+            config = {
+                name: 'get_foos',
+                serviceName: 'test-service',
+                resourceName: 'foos',
+                selectionPattern: '.*\\[Created\\].*',
+                statusCode: '200'
+            };
+
+            const targetTerraformString = dedent
+                `resource "aws_api_gateway_integration_response" "get_foos_200" {
+                  depends_on  = ["aws_api_gateway_integration.get_foos"]
+                  rest_api_id = "\${aws_api_gateway_rest_api.test-service.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  status_code = "\${aws_api_gateway_method_response.get_foos_200.status_code}"
+                  selection_pattern = ".*\\[Created\\].*"
                 }\n`.replace(/\\\$/g, '$');
 
             // act
