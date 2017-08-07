@@ -121,6 +121,20 @@ describe('swaggerToTerraform', function () {
                   resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
                   http_method = "\${aws_api_gateway_method.get_root.http_method}"
                   type        = "MOCK"
+                }
+
+                resource "aws_api_gateway_integration_response" "get_root_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  status_code = "200"
+                }
+
+                resource "aws_api_gateway_method_response" "get_root_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  status_code = "200"
                 }\n`.replace(/\\\$/g, '$');
 
             // act
@@ -170,6 +184,20 @@ describe('swaggerToTerraform', function () {
                   type        = "MOCK"
                 }
 
+                resource "aws_api_gateway_integration_response" "get_foos_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  status_code = "200"
+                }
+
+                resource "aws_api_gateway_method_response" "get_foos_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  status_code = "200"
+                }
+
                 #
                 # /foos/{fooId}
                 #
@@ -194,6 +222,20 @@ describe('swaggerToTerraform', function () {
                   resource_id = "\${aws_api_gateway_resource.foos_-fooId-.id}"
                   http_method = "\${aws_api_gateway_method.get_foos_-fooId-.http_method}"
                   type        = "MOCK"
+                }
+
+                resource "aws_api_gateway_integration_response" "get_foos_-fooId-_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos_-fooId-.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos_-fooId-.http_method}"
+                  status_code = "200"
+                }
+
+                resource "aws_api_gateway_method_response" "get_foos_-fooId-_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos_-fooId-.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos_-fooId-.http_method}"
+                  status_code = "200"
                 }\n`.replace(/\\\$/g, '$');
 
             // act
@@ -250,6 +292,20 @@ describe('swaggerToTerraform', function () {
                   resource_id = "\${aws_api_gateway_resource.fizz_buzz.id}"
                   http_method = "\${aws_api_gateway_method.get_fizz_buzz.http_method}"
                   type        = "MOCK"
+                }
+
+                resource "aws_api_gateway_integration_response" "get_fizz_buzz_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.fizz_buzz.id}"
+                  http_method = "\${aws_api_gateway_method.get_fizz_buzz.http_method}"
+                  status_code = "200"
+                }
+
+                resource "aws_api_gateway_method_response" "get_fizz_buzz_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.fizz_buzz.id}"
+                  http_method = "\${aws_api_gateway_method.get_fizz_buzz.http_method}"
+                  status_code = "200"
                 }\n`.replace(/\\\$/g, '$');
 
             // act
@@ -297,6 +353,20 @@ describe('swaggerToTerraform', function () {
                   passthrough_behavior    = "WHEN_NO_MATCH"
                 }
 
+                resource "aws_api_gateway_integration_response" "get_root_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  status_code = "200"
+                }
+
+                resource "aws_api_gateway_method_response" "get_root_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_rest_api.${serviceName}.root_resource_id}"
+                  http_method = "\${aws_api_gateway_method.get_root.http_method}"
+                  status_code = "200"
+                }
+
                 #
                 # /foos
                 #
@@ -324,6 +394,20 @@ describe('swaggerToTerraform', function () {
                   uri         = "arn:aws:apigateway:\${var.service["region"]}:lambda:path/2015-03-31/functions/\${var.lambdaArn}/invocations"
                   integration_http_method = "POST"
                   passthrough_behavior    = "WHEN_NO_MATCH"
+                }
+
+                resource "aws_api_gateway_integration_response" "get_foos_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  status_code = "200"
+                }
+
+                resource "aws_api_gateway_method_response" "get_foos_200" {
+                  rest_api_id = "\${aws_api_gateway_rest_api.${serviceName}.id}"
+                  resource_id = "\${aws_api_gateway_resource.foos.id}"
+                  http_method = "\${aws_api_gateway_method.get_foos.http_method}"
+                  status_code = "200"
                 }\n`.replace(/\\\$/g, '$');
 
             // act

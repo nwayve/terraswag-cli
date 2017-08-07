@@ -10,7 +10,9 @@ import * as _ from 'lodash';
 import {
     AuthorizationTypes,
     AwsApiGatewayIntegration,
+    AwsApiGatewayIntegrationResponse,
     AwsApiGatewayMethod,
+    AwsApiGatewayMethodResponse,
     AwsApiGatewayResource,
     AwsApiGatewayRestApi,
     HttpVerbs,
@@ -82,6 +84,23 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());
             fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
+            for (const regexPattern of Object.keys(amzItegration.responses)) {
+                const response = amzItegration.responses[regexPattern];
+                const integrationResponse = new AwsApiGatewayIntegrationResponse({
+                    name: `${methodName}_root`,
+                    serviceName: service.name,
+                    statusCode: response.statusCode
+                });
+                fs.appendFileSync(apitf, '\n' + integrationResponse.toTerraformString());
+            }
+            for (const statusCode of Object.keys(value.responses)) {
+                const methodResponse = new AwsApiGatewayMethodResponse({
+                    name: `${methodName}_root`,
+                    serviceName: service.name,
+                    statusCode: statusCode
+                });
+                fs.appendFileSync(apitf, '\n' + methodResponse.toTerraformString());
+            }
         });
     }
     const createdResources: string[] = [];
@@ -127,6 +146,25 @@ export function swaggerToTerraform(swaggerDoc: SwaggerDocument, callback?: Funct
             fs.appendFileSync(apitf, '\n' + sectionComment(methodName.toUpperCase()));
             fs.appendFileSync(apitf, method.toTerraformString());
             fs.appendFileSync(apitf, '\n' + integration.toTerraformString());
+            for (const regexPattern of Object.keys(amzItegration.responses)) {
+                const response = amzItegration.responses[regexPattern];
+                const integrationResponse = new AwsApiGatewayIntegrationResponse({
+                    name: `${methodName}_${resourceName}`,
+                    resourceName: resourceName,
+                    serviceName: service.name,
+                    statusCode: response.statusCode
+                });
+                fs.appendFileSync(apitf, '\n' + integrationResponse.toTerraformString());
+            }
+            for (const statusCode of Object.keys(pathItem[methodName].responses)) {
+                const methodResponse = new AwsApiGatewayMethodResponse({
+                    name: `${methodName}_${resourceName}`,
+                    resourceName: resourceName,
+                    serviceName: service.name,
+                    statusCode: statusCode
+                });
+                fs.appendFileSync(apitf, '\n' + methodResponse.toTerraformString());
+            }
         });
     });
 }
