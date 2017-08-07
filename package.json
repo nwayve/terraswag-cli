@@ -23,8 +23,8 @@
     "prebuild": "npm run clean",
     "build": "tsc",
     "postbuild": "copyfiles package.json LICENSE dist",
-    "preinstall": "npm pack dist",
-    "install": "npm i -g terraswag-cli-1.0.0-beta.0.tgz",
+    "preginstall": "npm pack dist",
+    "ginstall": "npm i -g terraswag-cli-1.0.0-beta.0.tgz",
     "tfp": "cd test/project/terraform && terraform get && terraform plan --var-file=\"service-config.tfvars\"",
     "tfa": "cd test/project/terraform && terraform get && terraform apply --var-file=\"service-config.tfvars\"",
     "tfd": "cd test/project/terraform && terraform destroy --var-file=\"service-config.tfvars\""
