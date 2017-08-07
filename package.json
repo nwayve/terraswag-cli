@@ -1,5 +1,5 @@
 {
-  "name": "terraswag",
+  "name": "terraswag-cli",
   "version": "1.0.0-beta.0",
   "description": "Terraswag transforms an API Swagger document into a terraform module.",
   "author": {
@@ -11,26 +11,32 @@
   "repository": "",
   "bugs": "",
   "keywords": [],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "bin": {
+    "terraswag": "index.js"
+  },
   "scripts": {
     "clean": "del-cli dist -f",
     "lint": "node node_modules/tslint/bin/tslint -c tslint.json -s node_modules/custom-tslint-formatters/formatters -t grouped --fix 'lib/**/*.ts?(x)'",
     "mocha": "node_modules/.bin/_mocha --recursive --compilers ts:ts-node/register --bail -R spec **/*.spec.ts",
-    "prebuild": "npm run clean",
-    "build": "tsc",
     "pretest": "npm run lint",
     "test": "node_modules/.bin/nyc npm run mocha",
+    "prebuild": "npm run clean",
+    "build": "tsc",
+    "postbuild": "copyfiles package.json LICENSE dist",
+    "preinstall": "npm pack dist",
+    "install": "npm i -g terraswag-cli-1.0.0-beta.0.tgz",
     "tfp": "cd test/project/terraform && terraform get && terraform plan --var-file=\"service-config.tfvars\"",
     "tfa": "cd test/project/terraform && terraform get && terraform apply --var-file=\"service-config.tfvars\"",
     "tfd": "cd test/project/terraform && terraform destroy --var-file=\"service-config.tfvars\""
   },
   "dependencies": {
+    "commander": "^2.11.0",
     "handlebars": "^4.0.10",
     "lodash": "^4.17.4"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
+    "@types/commander": "^2.9.1",
     "@types/dedent": "^0.7.0",
     "@types/del": "^2.2.32",
     "@types/handlebars": "^4.0.34",
@@ -41,7 +47,9 @@
     "@types/sinon-chai": "^2.7.28",
     "@types/uuid": "^3.0.0",
     "@types/yamljs": "^0.2.30",
+    "awesome-typescript-loader": "^3.2.1",
     "chai": "^4.1.0",
+    "copyfiles": "^1.2.0",
     "custom-tslint-formatters": "^2.1.0",
     "dedent": "^0.7.0",
     "del": "^3.0.0",
